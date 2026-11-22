@@ -1,0 +1,599 @@
+[
+ {
+  "id": "S01",
+  "sender": "IRCTCI",
+  "text": "PNR 8456231907 train 12675 Chennai to Coimbatore 14-12-2026. Coach B2 seat 34 CNF. Happy journey. -IRCTC",
+  "truth": 0,
+  "category": "travel",
+  "system_verdict": "safe",
+  "system_correct": true,
+  "raw": {
+   "verdict": "SAFE",
+   "risk_score": 0.0088,
+   "category_id": "generic",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "reassuring",
+     "contribution": -3.156
+    },
+    {
+     "id": "L_REFERENCE_IDS",
+     "direction": "reassuring",
+     "contribution": -0.823
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "LOOKS SAFE",
+   "explanation": "Nothing in this looks dangerous.",
+   "actions": [
+    "No action is needed. Keep the usual care: never share OTPs or PINs."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 4
+  },
+  "q_reason": {
+   "options": [
+    "an ordinary genuine message (OTP, bill, order or appointment)",
+    "a fake job / task offer",
+    "a trick to steal your password, PIN or OTP",
+    "someone pretending to be a relative in trouble"
+   ],
+   "correct": 0
+  }
+ },
+ {
+  "id": "S02",
+  "sender": "+919876512345",
+  "text": "Work from home, only 2 hrs a day, salary Rs 40,000 a month, no experience needed. WhatsApp 9876512345 to start today.",
+  "truth": 1,
+  "category": "job",
+  "system_verdict": "suspicious",
+  "system_correct": true,
+  "raw": {
+   "verdict": "SUSPICIOUS",
+   "risk_score": 0.5498,
+   "category_id": "job_task_scam",
+   "signals": [
+    {
+     "id": "S_JOB_TASK",
+     "direction": "risk",
+     "contribution": 1.488
+    },
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "reassuring",
+     "contribution": -1.173
+    },
+    {
+     "id": "S_CALL_BACK",
+     "direction": "risk",
+     "contribution": 0.635
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "SUSPICIOUS - be careful",
+   "explanation": "This looks like a fake job / online-task offer. Why: It offers easy money for simple online tasks, a classic task/job scam. It asks you to call an unknown number straight away.",
+   "actions": [
+    "Do not pay any fee, deposit or 'processing charge' to receive money, a job or a prize.",
+    "Do not call back the number given in the message.",
+    "Delete the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a fake UPI payment request",
+    "someone pretending to be a relative in trouble",
+    "a fake bank / KYC warning",
+    "a fake job / task offer"
+   ],
+   "correct": 3
+  }
+ },
+ {
+  "id": "S03",
+  "sender": "+919944001122",
+  "text": "Dear consumer your electricity will be disconnected tonight at 9.30 pm as previous bill is not updated. Call 9944001122 right now.",
+  "truth": 1,
+  "category": "utility",
+  "system_verdict": "dangerous",
+  "system_correct": true,
+  "raw": {
+   "verdict": "DANGEROUS",
+   "risk_score": 0.9934,
+   "category_id": "utility_scam",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 3.19
+    },
+    {
+     "id": "S_UTILITY_CUT",
+     "direction": "risk",
+     "contribution": 1.302
+    },
+    {
+     "id": "S_CALL_BACK",
+     "direction": "risk",
+     "contribution": 0.635
+    },
+    {
+     "id": "S_URGENCY",
+     "direction": "risk",
+     "contribution": 0.635
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "DANGEROUS - very likely a scam / attack",
+   "explanation": "This looks like a fake electricity / gas disconnection threat. Why: The wording closely matches known scam messages. It threatens to cut off electricity, gas or another utility unless you act now. It asks you to call an unknown number straight away.",
+   "actions": [
+    "Do not tap the link in this message.",
+    "Do not call back the number given in the message.",
+    "If you are worried, check using the official app or the phone number printed on your card or passbook, not the one in the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a fake electricity / utility cut-off threat",
+    "a fake UPI payment request",
+    "a fake delivery problem",
+    "a fake refund / tax message"
+   ],
+   "correct": 0
+  }
+ },
+ {
+  "id": "S04",
+  "sender": "Unknown contact (chat message)",
+  "text": "Your internet banking password expires today. Reset immediately: http://192.168.44.10/netbank/reset",
+  "truth": 1,
+  "category": "credential_theft",
+  "system_verdict": "dangerous",
+  "system_correct": true,
+  "raw": {
+   "verdict": "DANGEROUS",
+   "risk_score": 1.0,
+   "category_id": "account_threat",
+   "signals": [
+    {
+     "id": "M_URL_MODEL",
+     "direction": "risk",
+     "contribution": 6.183
+    },
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 2.519
+    },
+    {
+     "id": "U_IP_HOST",
+     "direction": "risk",
+     "contribution": 1.8
+    },
+    {
+     "id": "S_ACCOUNT_THREAT",
+     "direction": "risk",
+     "contribution": 1.103
+    },
+    {
+     "id": "S_URGENCY",
+     "direction": "risk",
+     "contribution": 0.635
+    },
+    {
+     "id": "U_HTTP_ONLY",
+     "direction": "risk",
+     "contribution": 0.26
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "DANGEROUS - very likely a scam / attack",
+   "explanation": "This looks like a fake account-blocking threat. Why: The website address looks like those used in phishing. The wording closely matches known scam messages. The link goes to a raw IP address instead of a normal website name.",
+   "actions": [
+    "Do not tap the link in this message.",
+    "If you are worried, check using the official app or the phone number printed on your card or passbook, not the one in the message.",
+    "Delete the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a trick to make you install a remote-control app",
+    "a fake instant-loan offer",
+    "a trick to steal your password, PIN or OTP",
+    "a fake UPI payment request"
+   ],
+   "correct": 2
+  }
+ },
+ {
+  "id": "S05",
+  "sender": "AX-AIRTEL",
+  "text": "Dear customer, your Airtel prepaid plan of Rs 299 expires on 18-Nov. Recharge in the Airtel Thanks app to continue enjoying uninterrupted service.",
+  "truth": 0,
+  "category": "telecom",
+  "system_verdict": "suspicious",
+  "system_correct": false,
+  "raw": {
+   "verdict": "SUSPICIOUS",
+   "risk_score": 0.3764,
+   "category_id": "generic",
+   "signals": [
+    {
+     "id": "S_GENERIC_GREETING",
+     "direction": "risk",
+     "contribution": 0.282
+    },
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "reassuring",
+     "contribution": -0.036
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "SUSPICIOUS - be careful",
+   "explanation": "This looks like a suspicious message. Why: It uses a generic greeting instead of your name.",
+   "actions": [
+    "If you already clicked or entered details: call your bank to block the card/UPI, change your passwords, and call 1930."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 4
+  },
+  "q_reason": {
+   "options": [
+    "a trick to make you pay a fee first",
+    "a trick to steal your password, PIN or OTP",
+    "someone pretending to be a relative in trouble",
+    "an ordinary genuine message (OTP, bill, order or appointment)"
+   ],
+   "correct": 3
+  }
+ },
+ {
+  "id": "S06",
+  "sender": "Unknown contact (chat message)",
+  "text": "Your package could not be delivered. Reschedule here and pay redelivery charge: https://bluedart-parcel.icu/r/9981",
+  "truth": 1,
+  "category": "delivery",
+  "system_verdict": "dangerous",
+  "system_correct": true,
+  "raw": {
+   "verdict": "DANGEROUS",
+   "risk_score": 1.0,
+   "category_id": "delivery_scam",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 7.025
+    },
+    {
+     "id": "M_URL_MODEL",
+     "direction": "risk",
+     "contribution": 3.702
+    },
+    {
+     "id": "U_BRAND_IMPERSONATION",
+     "direction": "risk",
+     "contribution": 2.377
+    },
+    {
+     "id": "S_DELIVERY_PROBLEM",
+     "direction": "risk",
+     "contribution": 1.104
+    },
+    {
+     "id": "U_RISKY_TLD",
+     "direction": "risk",
+     "contribution": 0.582
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "DANGEROUS - very likely a scam / attack",
+   "explanation": "This looks like a fake parcel or delivery problem. Why: The wording closely matches known scam messages. The website address looks like those used in phishing. The website name contains a well-known brand but is NOT that brand's official website.",
+   "actions": [
+    "Do not tap the link in this message.",
+    "If you are worried, check using the official app or the phone number printed on your card or passbook, not the one in the message.",
+    "Delete the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a fake bank / KYC warning",
+    "a fake instant-loan offer",
+    "a fake delivery problem",
+    "someone pretending to be a relative in trouble"
+   ],
+   "correct": 2
+  }
+ },
+ {
+  "id": "S07",
+  "sender": "AM-AMAZON",
+  "text": "Your Amazon delivery OTP is 2275. Please share it with the delivery associate only after receiving your package.",
+  "truth": 0,
+  "category": "otp",
+  "system_verdict": "suspicious",
+  "system_correct": false,
+  "raw": {
+   "verdict": "SUSPICIOUS",
+   "risk_score": 0.5635,
+   "category_id": "generic",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 1.006
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "SUSPICIOUS - be careful",
+   "explanation": "This looks like a suspicious message. Why: The wording closely matches known scam messages.",
+   "actions": [
+    "If you already clicked or entered details: call your bank to block the card/UPI, change your passwords, and call 1930."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 4
+  },
+  "q_reason": {
+   "options": [
+    "a fake refund / tax message",
+    "an ordinary genuine message (OTP, bill, order or appointment)",
+    "a fake police / customs / court threat",
+    "a trick to make you install a remote-control app"
+   ],
+   "correct": 1
+  }
+ },
+ {
+  "id": "S08",
+  "sender": "VK-ICICIR",
+  "text": "Your ICICI credit card reward points worth Rs 9,850 will expire today. Redeem now icici-rewards-claim.xyz",
+  "truth": 1,
+  "category": "reward",
+  "system_verdict": "dangerous",
+  "system_correct": true,
+  "raw": {
+   "verdict": "DANGEROUS",
+   "risk_score": 1.0,
+   "category_id": "account_threat",
+   "signals": [
+    {
+     "id": "M_URL_MODEL",
+     "direction": "risk",
+     "contribution": 4.843
+    },
+    {
+     "id": "U_BRAND_IMPERSONATION",
+     "direction": "risk",
+     "contribution": 2.377
+    },
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 2.356
+    },
+    {
+     "id": "S_ACCOUNT_THREAT",
+     "direction": "risk",
+     "contribution": 1.103
+    },
+    {
+     "id": "U_MANY_KEYWORDS",
+     "direction": "risk",
+     "contribution": 0.9
+    },
+    {
+     "id": "S_URGENCY",
+     "direction": "risk",
+     "contribution": 0.635
+    },
+    {
+     "id": "U_RISKY_TLD",
+     "direction": "risk",
+     "contribution": 0.582
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "DANGEROUS - very likely a scam / attack",
+   "explanation": "This looks like a fake account-blocking threat. Why: The website address looks like those used in phishing. The website name contains a well-known brand but is NOT that brand's official website. The wording closely matches known scam messages.",
+   "actions": [
+    "Do not tap the link in this message.",
+    "If you are worried, check using the official app or the phone number printed on your card or passbook, not the one in the message.",
+    "Delete the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a fake delivery problem",
+    "a fake job / task offer",
+    "a trick to make you install a remote-control app",
+    "a fake reward or prize"
+   ],
+   "correct": 3
+  }
+ },
+ {
+  "id": "S09",
+  "sender": "Unknown contact (chat message)",
+  "text": "Hi dear, i am Rachel from london, found your profile, i want to send you a gift parcel but need Rs 6,500 customs, please help",
+  "truth": 1,
+  "category": "romance",
+  "system_verdict": "dangerous",
+  "system_correct": true,
+  "raw": {
+   "verdict": "DANGEROUS",
+   "risk_score": 0.9767,
+   "category_id": "delivery_scam",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "risk",
+     "contribution": 3.382
+    },
+    {
+     "id": "S_DELIVERY_PROBLEM",
+     "direction": "risk",
+     "contribution": 1.104
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "DANGEROUS - very likely a scam / attack",
+   "explanation": "This looks like a fake parcel or delivery problem. Why: The wording closely matches known scam messages. It claims a parcel is stuck and asks for action or a fee, a common delivery scam.",
+   "actions": [
+    "Do not tap the link in this message.",
+    "If you are worried, check using the official app or the phone number printed on your card or passbook, not the one in the message.",
+    "Delete the message."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 0
+  },
+  "q_reason": {
+   "options": [
+    "a trick to make you install a remote-control app",
+    "a fake refund / tax message",
+    "a romance / friendship scam",
+    "a fake delivery problem"
+   ],
+   "correct": 2
+  }
+ },
+ {
+  "id": "S10",
+  "sender": "Unknown contact (chat message)",
+  "text": "Dei where are you? We are waiting at the canteen",
+  "truth": 0,
+  "category": "chat",
+  "system_verdict": "safe",
+  "system_correct": true,
+  "raw": {
+   "verdict": "SAFE",
+   "risk_score": 0.0309,
+   "category_id": "generic",
+   "signals": [
+    {
+     "id": "M_TEXT_MODEL",
+     "direction": "reassuring",
+     "contribution": -2.697
+    }
+   ]
+  },
+  "explanation": {
+   "headline": "LOOKS SAFE",
+   "explanation": "Nothing in this looks dangerous.",
+   "actions": [
+    "No action is needed. Keep the usual care: never share OTPs or PINs."
+   ]
+  },
+  "q_action": {
+   "options": [
+    "Ignore it: delete it and do not click, reply or call",
+    "Open the link to check whether it is real",
+    "Reply with the details they ask for",
+    "Call the phone number given in the message",
+    "It looks genuine: no special action needed"
+   ],
+   "correct": 4
+  },
+  "q_reason": {
+   "options": [
+    "an ordinary genuine message (OTP, bill, order or appointment)",
+    "a trick to make you pay a fee first",
+    "a trick to steal your password, PIN or OTP",
+    "a fake electricity / utility cut-off threat"
+   ],
+   "correct": 0
+  }
+ }
+]

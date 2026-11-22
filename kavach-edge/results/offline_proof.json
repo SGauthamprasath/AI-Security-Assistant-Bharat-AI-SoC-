@@ -1,0 +1,48 @@
+{
+ "timestamp": "2026-11-22T02:37:01+0000",
+ "platform": "linux",
+ "static": {
+  "files_scanned": 13,
+  "network_imports": [],
+  "pass": true
+ },
+ "runtime": {
+  "returncode": 0,
+  "seconds": 8.6,
+  "events": [],
+  "negative_control_caught": true,
+  "n_verdicts": 344,
+  "pcaps": 6,
+  "network_modules_loaded": [
+   "urllib",
+   "urllib.parse"
+  ],
+  "pass": true
+ },
+ "counters": {
+  "available": true,
+  "non_loopback_interfaces": [
+   "ifb0",
+   "ifb1",
+   "eth0"
+  ],
+  "moved": {
+   "eth0": {
+    "rx_bytes": 66,
+    "rx_packets": 1,
+    "tx_bytes": 289,
+    "tx_packets": 1
+   }
+  },
+  "note": "other processes may move these; the runtime guard and namespace test are the proof, this is corroboration"
+ },
+ "namespace": {
+  "available": true,
+  "returncode": 0,
+  "events": [],
+  "verdict_digest": "498e817e2d8d2527",
+  "same_verdicts_as_guarded_run": true,
+  "pass": true
+ },
+ "overall_pass": true
+}

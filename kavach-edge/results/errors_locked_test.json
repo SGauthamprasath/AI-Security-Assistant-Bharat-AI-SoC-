@@ -1,0 +1,77 @@
+{
+ "missed_scams": [
+  {
+   "text": "Sir/Madam your Canara Bank savings account is flagged inactive. Reactivate now by sending your ATM PIN to this number.",
+   "risk": 0.093,
+   "category": "credential_theft"
+  },
+  {
+   "text": "Join our premium stock market group. 100% sure shot tips, 5x returns in 15 days. Limited slots, DM now.",
+   "risk": 0.024,
+   "category": "investment"
+  },
+  {
+   "text": "To fix the issue install QuickSupport and share the ID number shown with our technician.",
+   "risk": 0.26,
+   "category": "remote_access"
+  },
+  {
+   "text": "Instant personal loan up to Rs 3 lakh in 10 minutes, zero documents. Pay Rs 999 insurance fee to disburse.",
+   "risk": 0.016,
+   "category": "loan"
+  },
+  {
+   "text": "aapka bijli bill pending hai, aaj raat 9 baje connection kat jayega. is number pe turant sampark karein 9988112233",
+   "risk": 0.263,
+   "category": "utility"
+  },
+  {
+   "text": "Scholarship for SC/ST students Rs 30,000 approved. Pay Rs 500 processing fee to release it.",
+   "risk": 0.013,
+   "category": "reward"
+  },
+  {
+   "text": "Mobile tower on your land: monthly rent Rs 45,000 + advance Rs 15 lakh. Pay Rs 8,500 registration fee to confirm.",
+   "risk": 0.212,
+   "category": "advance_fee"
+  }
+ ],
+ "false_alarms": [
+  {
+   "text": "Amazon: your package arrives today by 8 PM. For delivery please share OTP 4471 with our delivery associate only.",
+   "risk": 0.919,
+   "category": "delivery",
+   "band": "dangerous"
+  },
+  {
+   "text": "Your BESCOM bill for Oct 2026 is Rs 1,640. Last date 28 Nov. Pay at bescom.co.in or the BESCOM app.",
+   "risk": 0.672,
+   "category": "utility",
+   "band": "dangerous"
+  },
+  {
+   "text": "IMPORTANT: Banks never ask for OTP/PIN. Beware of fraud calls claiming KYC update. If in doubt, visit your home branch.",
+   "risk": 0.353,
+   "category": "awareness",
+   "band": "suspicious"
+  },
+  {
+   "text": "Congratulations! You have been selected for the NPTEL Star Performer certificate. Details on the NPTEL portal.",
+   "risk": 0.975,
+   "category": "school",
+   "band": "dangerous"
+  },
+  {
+   "text": "Your electricity meter will be replaced on 22 Nov between 10 AM and 1 PM. Please keep the premises accessible. - TANGEDCO",
+   "risk": 0.705,
+   "category": "utility",
+   "band": "dangerous"
+  },
+  {
+   "text": "Update on your complaint 77812: our engineer will visit tomorrow between 9 AM and 6 PM. Please keep your phone reachable.",
+   "risk": 0.599,
+   "category": "service",
+   "band": "suspicious"
+  }
+ ]
+}

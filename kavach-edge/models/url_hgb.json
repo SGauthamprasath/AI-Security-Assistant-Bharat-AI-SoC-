@@ -1,0 +1,45 @@
+{
+ "cfg": [
+  250,
+  0.08,
+  63
+ ],
+ "features": [
+  "host_len",
+  "n_labels",
+  "n_sub_labels",
+  "reg_label_len",
+  "n_dots",
+  "n_hyphens",
+  "n_digits",
+  "digit_ratio",
+  "longest_digit_run",
+  "entropy_host",
+  "entropy_reg",
+  "vowel_ratio_reg",
+  "max_consonant_run",
+  "is_ip",
+  "has_punycode",
+  "has_nonascii",
+  "tld_phish_rate",
+  "tld_len",
+  "is_shortener",
+  "is_shared_host",
+  "n_keywords",
+  "brand_in_sub",
+  "brand_in_reg_unofficial",
+  "typosquat_dist",
+  "n_hyphen_reg",
+  "digit_ratio_reg",
+  "mean_label_len",
+  "max_label_len",
+  "risky_tld",
+  "sub_depth_gt3"
+ ],
+ "ngram_bias": -1.3689541901607525,
+ "stack": {
+  "w_tree": 0.5325160024582167,
+  "w_ngram": 0.8021412853608698,
+  "b": 0.03123613148552157
+ }
+}

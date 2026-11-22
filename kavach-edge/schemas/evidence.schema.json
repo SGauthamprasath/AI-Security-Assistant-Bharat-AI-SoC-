@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "kavach.evidence/1.0",
+  "title": "Kavach-Edge evidence record",
+  "description": "What the detector hands to the UI and to the on-device language model. Contains NO raw message text.",
+  "type": "object",
+  "required": ["schema_version", "event_id", "timestamp", "input", "verdict", "category", "category_text", "signals", "remediation", "privacy"],
+  "properties": {
+    "schema_version": {"const": "kavach.evidence/1.0"},
+    "event_id": {"type": "string"},
+    "timestamp": {"type": "string"},
+    "input": {"type": "object", "required": ["type", "sha256", "length"],
+      "properties": {"type": {"enum": ["sms", "url", "flow_window", "message"]}, "sha256": {"type": "string"}, "length": {"type": "integer", "minimum": 0}, "sender_type": {"type": "string"}}},
+    "verdict": {"type": "object", "required": ["label", "risk_score", "confidence", "thresholds"],
+      "properties": {"label": {"enum": ["safe", "suspicious", "dangerous"]}, "risk_score": {"type": "number", "minimum": 0, "maximum": 1}, "confidence": {"enum": ["low", "medium", "high"]},
+                     "thresholds": {"type": "object", "required": ["suspicious", "dangerous"]}}},
+    "category": {"type": "string"},
+    "category_text": {"type": "string"},
+    "signals": {"type": "array", "items": {"type": "object", "required": ["id", "source", "direction", "contribution"],
+      "properties": {"id": {"type": "string"}, "source": {"enum": ["model", "rule"]}, "modality": {"type": "string"}, "direction": {"enum": ["risk", "reassuring"]}, "contribution": {"type": "number"}, "description": {"type": "string"}}}},
+    "remediation": {"type": "array", "items": {"type": "string"}},
+    "privacy": {"type": "object", "required": ["processed_on_device", "network_calls", "raw_text_included"],
+      "properties": {"processed_on_device": {"const": true}, "network_calls": {"const": 0}, "raw_text_included": {"const": false}}}
+  }
+}

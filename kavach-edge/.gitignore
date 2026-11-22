@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+study/data/
+data/raw/*.whl
+data/processed/url_X.npy
+.venv/

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kavach-Edge usability study</title>
+<style>
+:root{--ink:#0b0b0b;--muted:#52514e;--line:#e4e3df;--bg:#fbfaf7;--card:#fff;--blue:#2a78d6;--red:#c0392b;--amber:#b7791f;--green:#1a7f4f}
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+main{max-width:760px;margin:0 auto;padding:20px 16px 80px}h1{font-size:22px;margin:.2em 0}h2{font-size:18px;margin:1.2em 0 .4em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.sms{background:#eef3fb;border-radius:14px;padding:12px 14px;border:1px solid #d5e2f6;white-space:pre-wrap}
+.sender{font-size:13px;color:var(--muted);margin-bottom:4px}
+.sys{border-left:4px solid var(--blue);padding:10px 14px;background:#f6f8fc;border-radius:6px}
+.sys.raw{font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;color:#fff;font-weight:600;font-size:14px}
+.DANGEROUS{background:var(--red)}.SUSPICIOUS{background:var(--amber)}.SAFE{background:var(--green)}
+label.opt{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin:6px 0;cursor:pointer;background:#fff}
+label.opt:hover{border-color:var(--blue)}input[type=radio]{margin-right:8px}
+.scale{display:flex;gap:8px;flex-wrap:wrap}.scale label{flex:1;min-width:54px;text-align:center;border:1px solid var(--line);border-radius:8px;padding:8px 4px;cursor:pointer;background:#fff}
+.scale .ends{font-size:12px;color:var(--muted)}
+button{font:inherit;padding:10px 20px;border-radius:8px;border:0;background:var(--blue);color:#fff;font-weight:600;cursor:pointer}button:disabled{background:#b9c4d4;cursor:not-allowed}
+button.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.progress{height:6px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 14px}.progress>div{height:100%;background:var(--blue)}
+small,.muted{color:var(--muted)}table.sus{width:100%;border-collapse:collapse}table.sus td{padding:8px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.warn{background:#fff7e6;border:1px solid #f1d9a6;padding:10px 12px;border-radius:8px;font-size:14px}
+</style></head><body><main id="app"></main>
+<script>
+"use strict";
+const SCENARIOS = /*__SCENARIOS__*/[];
+const SUS_ITEMS = ["I think that I would like to use this app frequently.","I found the app unnecessarily complex.","I thought the app was easy to use.","I think that I would need the support of a technical person to be able to use this app.","I found the various parts of the app were well integrated.","I thought there was too much inconsistency in this app.","I would imagine that most people would learn to use this app very quickly.","I found the app very cumbersome to use.","I felt very confident using the app.","I needed to learn a lot of things before I could get going with this app."];
+const S = {step:"consent", pid:"", n:0, meta:{}, order:[], cond:{}, i:0, rows:[], t0:0, sus:[], comments:""};
+const $ = (h)=>{const d=document.createElement("div");d.innerHTML=h;return d};
+const esc = (s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function save(){try{localStorage.setItem("kavach_study_"+S.pid,JSON.stringify(S))}catch(e){}}
+function setup(){ // counterbalancing: condition of scenario k = (k + n) mod 2 ; presentation order = seeded shuffle of participant number
+  const r=rng(1000+S.n); S.order=shuffle(SCENARIOS.map((_,k)=>k),r);
+  SCENARIOS.forEach((s,k)=>{S.cond[s.id]=((k+S.n)%2===0)?"A_raw":"B_plain"});
+}
+function render(){const m=document.getElementById("app");m.innerHTML="";const f={consent,meta,intro,trial,sus,done}[S.step];m.appendChild(f());window.scrollTo(0,0)}
+function consent(){const d=$(`<h1>Kavach-Edge usability study</h1>
+<div class="card"><p>We are testing a scam-and-threat warning app for phones. <b>We are testing the app, not you</b> - there are no wrong answers.</p>
+<ul><li>About 12 minutes. You will read 10 messages and the app's verdict, then answer a few quick questions.</li><li>We record only your answers and timings plus a participant number. <b>No name, phone number or message of yours is collected.</b></li><li>This page works offline; your answers stay on this device until the researcher exports them.</li><li>You can stop at any time without giving a reason.</li></ul>
+<p class="warn">All messages are fictional examples written for this study. Do not tap any links.</p>
+<label><input type="checkbox" id="ok"> I have read the above and agree to take part (18+ years).</label><br><br>
+<label>Participant number (given by the researcher): <input id="pid" type="number" min="1" style="width:90px;font:inherit;padding:6px"></label><br><br>
+<button id="go" disabled>Start</button></div>`);
+  const chk=d.querySelector("#ok"),pid=d.querySelector("#pid"),go=d.querySelector("#go");
+  const upd=()=>go.disabled=!(chk.checked&&pid.value>0);chk.onchange=upd;pid.oninput=upd;
+  go.onclick=()=>{S.n=parseInt(pid.value);S.pid="P"+String(S.n).padStart(2,"0");setup();S.step="meta";save();render()};return d}
+function meta(){const d=$(`<h1>A little about you</h1><div class="card">
+<p>How often do you use UPI / mobile banking?</p><div class="scale" id="q1"></div><br>
+<p>How often do you receive suspicious messages (SMS / WhatsApp)?</p><div class="scale" id="q2"></div><br>
+<p>Have you (or someone you know) ever lost money to a scam?</p><div class="scale" id="q3"></div><br><button id="next" disabled>Continue</button></div>`);
+  const mk=(id,labels,key)=>{const el=d.querySelector(id);labels.forEach((l,i)=>{el.appendChild($(`<label><input type="radio" name="${key}" value="${i}"> ${l}</label>`).firstChild)});el.onchange=()=>{S.meta[key]=el.querySelector("input:checked").value;chk()}};
+  const chk=()=>d.querySelector("#next").disabled=!(S.meta.upi!==undefined&&S.meta.susp!==undefined&&S.meta.loss!==undefined);
+  mk("#q1",["Never","Rarely","Monthly","Weekly","Daily"],"upi");mk("#q2",["Never","Rarely","Monthly","Weekly","Daily"],"susp");mk("#q3",["No","Yes","Prefer not to say"],"loss");
+  d.querySelector("#next").onclick=()=>{S.step="intro";save();render()};return d}
+function intro(){const d=$(`<h1>How it works</h1><div class="card"><p>For each message you will see: the <b>message</b>, then what the <b>app says about it</b>. Then answer four quick questions.</p>
+<p class="muted">Try to answer as you would in real life on your own phone.</p><button id="go">Begin</button></div>`);d.querySelector("#go").onclick=()=>{S.step="trial";S.i=0;S.t0=performance.now();save();render()};return d}
+function trial(){const k=S.order[S.i],sc=SCENARIOS[k],cond=S.cond[sc.id];
+  const sys=cond==="A_raw"?`<div class="sys raw"><b>App output (technical)</b>\n${esc(JSON.stringify(sc.raw,null,1))}</div>`:
+   `<div class="sys"><span class="badge ${sc.system_verdict.toUpperCase()}">${esc(sc.explanation.headline)}</span><p style="margin:.6em 0 .3em">${esc(sc.explanation.explanation)}</p>${sc.explanation.actions.length?"<b>What to do</b><ul style='margin:.2em 0'>"+sc.explanation.actions.map(a=>"<li>"+esc(a)+"</li>").join("")+"</ul>":""}</div>`;
+  const opts=(name,arr)=>arr.map((t,i)=>`<label class="opt"><input type="radio" name="${name}" value="${i}">${esc(t)}</label>`).join("");
+  const scale=(name,lo,hi)=>`<div class="scale">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="${name}" value="${v}"><br>${v}</label>`).join("")}</div><div class="ends" style="display:flex;justify-content:space-between"><span>${lo}</span><span>${hi}</span></div>`;
+  const d=$(`<div class="muted">Message ${S.i+1} of ${SCENARIOS.length}</div><div class="progress"><div style="width:${S.i/SCENARIOS.length*100}%"></div></div>
+  <div class="card"><div class="sender">From: ${esc(sc.sender)}</div><div class="sms">${esc(sc.text)}</div></div>${sys.startsWith("<div class=\"sys raw")?"<div class='card'>"+sys+"</div>":"<div class='card'>"+sys+"</div>"}
+  <div class="card"><b>1. What would you do with this message?</b>${opts("a",sc.q_action.options)}<br><b>2. What kind of message is this?</b>${opts("r",sc.q_reason.options)}<br>
+  <b>3. How confident are you in your answers?</b>${scale("c","Not at all","Completely")}<br><b>4. How much do you trust the app's judgement here?</b>${scale("t","Not at all","Completely")}<br><br><button id="next" disabled>${S.i+1<SCENARIOS.length?"Next message":"Continue"}</button></div>`);
+  const chk=()=>d.querySelector("#next").disabled=!["a","r","c","t"].every(n=>d.querySelector(`input[name=${n}]:checked`));d.addEventListener("change",chk);
+  d.querySelector("#next").onclick=()=>{const g=n=>parseInt(d.querySelector(`input[name=${n}]:checked`).value);const a=g("a"),r=g("r");
+    S.rows.push({pid:S.pid,row_type:"trial",scenario_id:sc.id,condition:cond,position:S.i+1,truth:sc.truth,system_correct:sc.system_correct?1:0,action_choice:a,action_correct:a===sc.q_action.correct?1:0,reason_choice:r,reason_correct:r===sc.q_reason.correct?1:0,confidence:g("c"),trust:g("t"),time_ms:Math.round(performance.now()-S.t0)});
+    S.i++;S.t0=performance.now();if(S.i>=SCENARIOS.length)S.step="sus";save();render()};return d}
+function sus(){const d=$(`<h1>Overall impression</h1><div class="card"><p>Think about the app overall. 1 = strongly disagree, 5 = strongly agree.</p><table class="sus">${SUS_ITEMS.map((t,i)=>`<tr><td>${i+1}. ${t}</td><td style="white-space:nowrap">${[1,2,3,4,5].map(v=>`<label><input type="radio" name="s${i}" value="${v}">${v}</label>`).join(" ")}</td></tr>`).join("")}</table><br>
+  <p>Anything that confused you, or that you liked? (optional)</p><textarea id="cm" rows="3" style="width:100%;font:inherit"></textarea><br><br><button id="fin" disabled>Finish</button></div>`);
+  d.addEventListener("change",()=>{d.querySelector("#fin").disabled=!SUS_ITEMS.every((_,i)=>d.querySelector(`input[name=s${i}]:checked`))});
+  d.querySelector("#fin").onclick=()=>{S.sus=SUS_ITEMS.map((_,i)=>parseInt(d.querySelector(`input[name=s${i}]:checked`).value));S.comments=d.querySelector("#cm").value;S.step="done";save();render()};return d}
+function csv(){const cols=["pid","row_type","scenario_id","condition","position","truth","system_correct","action_choice","action_correct","reason_choice","reason_correct","confidence","trust","time_ms","upi_use","suspicious_freq","scam_loss",...SUS_ITEMS.map((_,i)=>"sus_"+(i+1)),"comments","synthetic"];
+  const q=v=>v===undefined||v===null?"":'"'+String(v).replace(/"/g,'""')+'"';const rows=S.rows.slice();
+  rows.push({pid:S.pid,row_type:"survey",upi_use:S.meta.upi,suspicious_freq:S.meta.susp,scam_loss:S.meta.loss,comments:S.comments,...Object.fromEntries(S.sus.map((v,i)=>["sus_"+(i+1),v]))});
+  rows.forEach(r=>r.synthetic=0);return [cols.join(","),...rows.map(r=>cols.map(c=>q(r[c])).join(","))].join("\n")}
+function done(){const d=$(`<h1>Thank you!</h1><div class="card"><p>You are done. Please hand the device back to the researcher.</p>
+<p class="muted"><b>Debrief:</b> some of the messages were genuine and some were scams written for this study. Two screen styles were compared (technical vs plain-language). Your answers help us make the app clearer for everyone. In real life: never share an OTP/PIN, never tap links in unexpected messages, and report cyber-fraud at <b>1930</b> or cybercrime.gov.in.</p>
+<button id="dl">Download my results (CSV)</button> <button class="sec" id="cp">Copy CSV</button></div>`);
+  d.querySelector("#dl").onclick=()=>{const b=new Blob([csv()],{type:"text/csv"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`kavach_study_${S.pid}.csv`;a.click()};
+  d.querySelector("#cp").onclick=()=>{navigator.clipboard&&navigator.clipboard.writeText(csv())};return d}
+render();
+</script></body></html>

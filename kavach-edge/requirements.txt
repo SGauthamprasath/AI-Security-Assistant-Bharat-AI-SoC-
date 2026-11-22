@@ -1,0 +1,13 @@
+# Runtime (what runs on the phone / Pi): NumPy only for the detector; SciPy is needed by the constrained fusion fit at train time only.
+numpy>=1.26
+# Training / evaluation / reports
+pandas>=2.0
+scikit-learn>=1.4
+scipy>=1.11
+matplotlib>=3.8
+# Tests, study analysis, demo-video build, offline-proof schema checks
+pytest>=8
+jsonschema>=4
+pillow>=10
+playwright>=1.40        # only for study/_selftest/ui_smoke_test.py
+# Optional: scapy is NOT needed (pcap files are read by kavach/pcapread.py). Only tools/live_sniff.py uses it.

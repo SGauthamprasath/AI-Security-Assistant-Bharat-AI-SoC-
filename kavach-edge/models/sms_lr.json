@@ -1,0 +1,12 @@
+{
+ "dim": 262144,
+ "bias": -1.7200810648223341,
+ "calib": {
+  "a": 1.485233406971885,
+  "b": 0.5015132036476778
+ },
+ "C": 80,
+ "hash": "crc32(utf8(token)) % dim; tokens: w:/b:/c:3-5/x:; value=1/sqrt(n_active)",
+ "n_train": 15503,
+ "nonzero_weights": 107788
+}
