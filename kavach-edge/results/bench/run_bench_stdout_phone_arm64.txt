@@ -1,0 +1,20 @@
+
+[smoke] machine=aarch64 arm=True
+  load 62.0 ms | message p50/p95/p99 = 1.6565/3.9902/4.5801 ms | url p50 1.6845 ms | 486.4 msg/s
+  RSS after load 262.4 MB, PSS 130.9 MB | model bytes 3.62 MB
+  wrote /storage/emulated/0/Android/data/com.kavach.edge/files/kbench/results/bench/bench_smoke.json
+
+[phone_arm64] machine=aarch64 arm=True
+  load 57.9 ms | message p50/p95/p99 = 1.54/3.55/3.9223 ms | url p50 1.623 ms | 524.0 msg/s
+  RSS after load 236.2 MB, PSS 115.1 MB | model bytes 3.62 MB
+  wrote /storage/emulated/0/Android/data/com.kavach.edge/files/kbench/results/bench/bench_phone_arm64.json
+
+[phone_arm64] machine=aarch64 arm=True
+  load 58.0 ms | message p50/p95/p99 = 1.552/3.6551/4.3704 ms | url p50 1.549 ms | 513.3 msg/s
+  RSS after load 236.5 MB, PSS 116.9 MB | model bytes 3.62 MB
+  wrote /storage/emulated/0/Android/data/com.kavach.edge/files/kbench/results/bench/bench_phone_arm64.json
+
+[phone_arm64] machine=aarch64 arm=True
+  load 53.9 ms | message p50/p95/p99 = 1.5435/3.593/3.934 ms | url p50 1.4905 ms | 523.9 msg/s
+  RSS after load 235.6 MB, PSS 116.4 MB | model bytes 3.62 MB
+  wrote /storage/emulated/0/Android/data/com.kavach.edge/files/kbench/results/bench/bench_phone_arm64.json

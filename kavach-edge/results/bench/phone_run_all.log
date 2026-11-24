@@ -1,0 +1,31 @@
+2026-11-25 01:14:47 START  Vivo V40e (V2403), MediaTek Dimensity 7300, 8 GB RAM, Android 16 (OriginOS 6); Kavach app, detector via Chaquopy (Python 3.12, NumPy 1.26.2) in the app process; screen on, app in foreground, phone on USB; Extended RAM off (user-confirmed, phone restarted before the run) | airplane=0 swap_mb=8191 battery=43% batt_temp=37.2C usb_power=true ac_power=false brightness_auto=0 uptime_min=13
+2026-11-25 01:14:47 switch airplane mode ON now - waiting 90s
+2026-11-25 01:16:18 conditions after wait: airplane=0 swap_mb=8191 battery=43% batt_temp=36.7C usb_power=true ac_power=false brightness_auto=0 uptime_min=14
+2026-11-25 01:16:18 phase 1: cold start x5
+2026-11-25 01:17:25   cold start 1: TIMEOUT
+2026-11-25 01:17:25   cold start 1 done (am TotalTime 0 ms)
+2026-11-25 01:18:33   cold start 2: TIMEOUT
+2026-11-25 01:18:33   cold start 2 done (am TotalTime 1044 ms)
+2026-11-25 01:19:41   cold start 3: TIMEOUT
+2026-11-25 01:19:41   cold start 3 done (am TotalTime 924 ms)
+2026-11-25 01:20:48   cold start 4: TIMEOUT
+2026-11-25 01:20:48   cold start 4 done (am TotalTime 929 ms)
+2026-11-25 01:21:56   cold start 5: TIMEOUT
+2026-11-25 01:21:56   cold start 5 done (am TotalTime 901 ms)
+2026-11-25 01:21:56 phase 2: run_bench run 1 - cool-down 90s
+2026-11-25 01:25:45   run 1 saved -> results/bench/bench_phone_arm64_run1.json | airplane=0 swap_mb=8191 battery=43% batt_temp=37.3C usb_power=true ac_power=false brightness_auto=0 uptime_min=24
+2026-11-25 01:25:45 phase 2: run_bench run 2 - cool-down 90s
+2026-11-25 01:29:34   run 2 saved -> results/bench/bench_phone_arm64_run2.json | airplane=0 swap_mb=8191 battery=43% batt_temp=37.4C usb_power=true ac_power=false brightness_auto=0 uptime_min=27
+2026-11-25 01:29:34 phase 2: run_bench run 3 - cool-down 90s
+2026-11-25 01:33:23   run 3 saved -> results/bench/bench_phone_arm64_run3.json | airplane=0 swap_mb=8191 battery=43% batt_temp=37.3C usb_power=true ac_power=false brightness_auto=0 uptime_min=31
+2026-11-25 01:33:24 phase 3: Llama run 1 - cool-down 90s
+results/bench/bench_phone_arm64_run1.json: advisor ttft p50 2614.0 ms, decode p50 14.5424 tok/s, n=10
+2026-11-25 01:35:56   Llama run 1 saved | airplane=0 swap_mb=8191 battery=43% batt_temp=37.5C usb_power=true ac_power=false brightness_auto=0 uptime_min=34
+2026-11-25 01:35:56 phase 3: Llama run 2 - cool-down 90s
+results/bench/bench_phone_arm64_run2.json: advisor ttft p50 2634.5 ms, decode p50 14.3149 tok/s, n=10
+2026-11-25 01:38:29   Llama run 2 saved | airplane=0 swap_mb=8191 battery=43% batt_temp=37.6C usb_power=true ac_power=false brightness_auto=0 uptime_min=36
+2026-11-25 01:38:29 phase 3: Llama run 3 - cool-down 90s
+results/bench/bench_phone_arm64_run3.json: advisor ttft p50 2589.0 ms, decode p50 14.4907 tok/s, n=10
+2026-11-25 01:41:02   Llama run 3 saved | airplane=0 swap_mb=8191 battery=43% batt_temp=37.8C usb_power=true ac_power=false brightness_auto=0 uptime_min=39
+cold start n=4: load p50 380.35 ms, first verdict p50 12.655 ms, python start p50 381.55 ms
+2026-11-25 01:41:03 ALL DONE | airplane=0 swap_mb=8191 battery=43% batt_temp=37.8C usb_power=true ac_power=false brightness_auto=0 uptime_min=39

@@ -48,7 +48,30 @@ class MainActivity : Activity() {
         // Funtouch OS freezes apps it thinks are idle; keep the screen on while the app is open.
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         buildUi()
+        val tPy = System.nanoTime()
         if (!Python.isStarted()) Python.start(AndroidPlatform(this))
+        val pythonStartMs = (System.nanoTime() - tPy) / 1e6
+
+        // Benchmark hooks (bench/BENCHMARK_PROTOCOL.md). Llama is NOT loaded in these modes, so the
+        // detector's memory numbers are the detector's alone.
+        //   --ez coldstart true                       one cold-start sample (run after am force-stop)
+        //   --es bench_args '["--label","phone_arm64",...]'   run_bench.py, copy pushed to files/kbench
+        if (intent.getBooleanExtra("coldstart", false)) {
+            pyExec.execute {
+                val r = bridge.callAttr("cold_start", File(getExternalFilesDir(null), "coldstart.jsonl").path, pythonStartMs).toString()
+                runOnUiThread { statusView.text = "Cold start: $r" }
+            }
+            return
+        }
+        // bench_args_file: path of a JSON list of run_bench.py arguments (avoids shell quoting of the device note)
+        (intent.getStringExtra("bench_args") ?: intent.getStringExtra("bench_args_file")?.let { File(it).readText() })?.let { args ->
+            status("Running run_bench.py ... (Llama not loaded)")
+            pyExec.execute {
+                val r = bridge.callAttr("run_bench", File(getExternalFilesDir(null), "kbench").path, args).toString()
+                runOnUiThread { statusView.text = "Bench finished: $r" }
+            }
+            return
+        }
 
         // Dev hook for the phone-vs-laptop parity check (see Step 2):
         //   adb shell am start -n com.kavach.edge/.MainActivity --es score_in /data/local/tmp/kavach/parity_in.jsonl

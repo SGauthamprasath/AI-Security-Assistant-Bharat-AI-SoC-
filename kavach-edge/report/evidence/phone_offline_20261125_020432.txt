@@ -1,0 +1,43 @@
+# Kavach app - phone offline check, 2026-11-25 02:04:32
+device: V2403, Android 16, airplane_mode_on=0
+
+## 1. Permissions
+aapt dump permissions ../android/app/build/outputs/apk/debug/app-debug.apk:
+package: com.kavach.edge
+permission: com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'
+installed package (dumpsys package com.kavach.edge), permission lines:
+Permissions:
+  Permission [com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION] (2841882):
+    perm=PermissionInfo{a20cae6 com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION}
+    installPermissionsFixed=false
+    declared permissions:
+      com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: prot=signature
+    requested permissions:
+      com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+    install permissions:
+      com.kavach.edge.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION: granted=true
+      runtime permissions:
+      runtime permissions:
+      runtime permissions:
+RESULT 1: PASS - no INTERNET permission requested
+app uid: 10380
+
+## 3a. Network byte counters for uid 10380 BEFORE
+(uid 10380 has no row in mAppUidStatsMap: no traffic counted since boot)
+parser check - Play Store uid 10190 row: uid rxBytes rxPackets txBytes txPackets:     10190 379418 1024 963934 1500
+
+## 2. Sockets held by the app while it runs detector + Llama
+pid: 15849
+socket inodes in /proc/15849/fd: 12
+app process groups: 9997 20380 50380 99909997
+for comparison, Play Store (has INTERNET) groups: 1079 3001 3002 3003 3007 9997 20190 50190 99909997
+RESULT 2: PASS - app process is not in the inet group (3003): the kernel will not give it an internet socket
+socket tables /proc/15849/net/*: NOT VERIFIABLE on this phone (permission denied for run-as)
+batch finished: 10 messages explained by Llama
+
+## 3b. Network byte counters for uid 10380 AFTER
+(uid 10380 has no row in mAppUidStatsMap: no traffic counted since boot)
+RESULT 3: PASS - byte counters unchanged
+
+saved: report/evidence/phone_offline_20261125_020432.txt

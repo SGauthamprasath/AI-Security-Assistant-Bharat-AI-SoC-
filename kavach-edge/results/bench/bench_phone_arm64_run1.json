@@ -1,0 +1,261 @@
+{
+ "label": "phone_arm64",
+ "device_note": "Vivo V40e (V2403), MediaTek Dimensity 7300, 8 GB RAM, Android 16 (OriginOS 6); Kavach app, detector via Chaquopy (Python 3.12, NumPy 1.26.2) in the app process; screen on, app in foreground, phone on USB; Extended RAM off (user-confirmed, phone restarted before the run); conditions at run start: airplane=0 swap_mb=8191 battery=43% batt_temp=36.8C usb_power=true ac_power=false brightness_auto=0 uptime_min=21 (run 1 of 3)",
+ "timestamp": "2026-11-25T01:23:27+0530",
+ "machine": {
+  "machine": "aarch64",
+  "is_arm": true,
+  "system": "Linux",
+  "release": "6.1.145-android14-11-g0f62335d867d-ab16017550",
+  "python": "3.12.15",
+  "cpu_model": "0xd41",
+  "logical_cpus": 8,
+  "cpu_freq_mhz_max": 2500.0
+ },
+ "reference_only": false,
+ "memory_before_load": {
+  "rss_mb": 202.9,
+  "pss_mb": 83.0
+ },
+ "in_process_load_ms": 57.9,
+ "memory_after_load": {
+  "rss_mb": 236.2,
+  "pss_mb": 115.1
+ },
+ "model_footprint_bytes": {
+  "sms_model_bytes": 1048576,
+  "url_model_bytes": 1435867,
+  "net_model_bytes": 301978
+ },
+ "model_files_bytes": {
+  "fusion.json": 3486,
+  "net_hgb.npz": 301978,
+  "net_meta.json": 2474,
+  "psl_multi.json": 83602,
+  "shared_hosting.txt": 5725,
+  "sms_lr.bin": 1048576,
+  "sms_lr.json": 269,
+  "tld_rate.json": 19981,
+  "trusted_domains.txt": 713491,
+  "url_hgb.json": 780,
+  "url_hgb.npz": 387291,
+  "url_ngram.bin": 1048576
+ },
+ "message_latency_ms": {
+  "total": {
+   "n": 2000,
+   "mean": 1.9084,
+   "p50": 1.54,
+   "p90": 3.3436,
+   "p95": 3.55,
+   "p99": 3.9223,
+   "max": 4.499
+  },
+  "stages": {
+   "preprocess": {
+    "n": 2000,
+    "mean": 0.1013,
+    "p50": 0.1,
+    "p90": 0.121,
+    "p95": 0.133,
+    "p99": 0.162,
+    "max": 0.47
+   },
+   "sms_model": {
+    "n": 2000,
+    "mean": 0.3989,
+    "p50": 0.4,
+    "p90": 0.4751,
+    "p95": 0.505,
+    "p99": 0.6051,
+    "max": 0.87
+   },
+   "sms_rules": {
+    "n": 2000,
+    "mean": 0.4341,
+    "p50": 0.44,
+    "p90": 0.528,
+    "p95": 0.56,
+    "p99": 0.624,
+    "max": 0.79
+   },
+   "url_analysis": {
+    "n": 2000,
+    "mean": 0.5092,
+    "p50": 0.002,
+    "p90": 1.8081,
+    "p95": 1.925,
+    "p99": 2.166,
+    "max": 2.48
+   },
+   "fusion": {
+    "n": 2000,
+    "mean": 0.0901,
+    "p50": 0.084,
+    "p90": 0.114,
+    "p95": 0.127,
+    "p99": 0.148,
+    "max": 0.18
+   },
+   "evidence": {
+    "n": 2000,
+    "mean": 0.3672,
+    "p50": 0.207,
+    "p90": 0.6511,
+    "p95": 0.69,
+    "p99": 0.7611,
+    "max": 1.175
+   }
+  }
+ },
+ "message_latency_with_prompt_ms": {
+  "n": 500,
+  "mean": 1.949,
+  "p50": 1.6175,
+  "p90": 3.3382,
+  "p95": 3.5385,
+  "p99": 3.7764,
+  "max": 4.079
+ },
+ "url_latency_ms": {
+  "n": 2000,
+  "mean": 1.6501,
+  "p50": 1.623,
+  "p90": 2.1102,
+  "p95": 2.2431,
+  "p99": 2.6071,
+  "max": 3.414
+ },
+ "throughput_msgs_per_s": 524.0,
+ "memory_after_message_workload": {
+  "rss_mb": 243.0,
+  "pss_mb": 116.0
+ },
+ "pcap_analysis": {
+  "normal_browsing": {
+   "connections": 110,
+   "ms_p50": 51.7,
+   "connections_per_s": 2126.0
+  },
+  "port_scan": {
+   "connections": 1024,
+   "ms_p50": 1071.2,
+   "connections_per_s": 956.0
+  },
+  "syn_flood": {
+   "connections": 3000,
+   "ms_p50": 10679.4,
+   "connections_per_s": 281.0
+  },
+  "mixed_home_network": {
+   "connections": 4135,
+   "ms_p50": 12441.8,
+   "connections_per_s": 332.0
+  }
+ },
+ "memory_after_workload": {
+  "rss_mb": 288.9,
+  "pss_mb": 161.7
+ },
+ "advisor": {
+  "measured": true,
+  "source": "Kavach Android app: ExecuTorch LlmModule in-process (executorch-android 1.1.0, XNNPACK CPU); stats from ExecuTorch's onStats callback; not run_bench --advisor-cmd",
+  "model": "Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte",
+  "samples": 10,
+  "ttfb_ms": {
+   "n": 10,
+   "mean": 2610.9,
+   "p50": 2614.0,
+   "p90": 2714.8,
+   "p95": 2727.4,
+   "p99": 2737.48,
+   "max": 2740
+  },
+  "total_ms": {
+   "n": 10,
+   "mean": 5428.6,
+   "p50": 5723.5,
+   "p90": 6220.0,
+   "p95": 6224.5,
+   "p99": 6228.1,
+   "max": 6229
+  },
+  "tokens_per_s": {
+   "n": 10,
+   "mean": 14.289,
+   "p50": 14.5424,
+   "p90": 14.6285,
+   "p95": 14.6672,
+   "p99": 14.6981,
+   "max": 14.7059
+  },
+  "prefill_tokens_per_s": {
+   "n": 10,
+   "mean": 95.7082,
+   "p50": 95.9775,
+   "p90": 97.0691,
+   "p95": 97.7403,
+   "p99": 98.2772,
+   "max": 98.4115
+  },
+  "prompt_tokens": {
+   "n": 10,
+   "mean": 249.8,
+   "p50": 253.0,
+   "p90": 259.0,
+   "p95": 259.0,
+   "p99": 259.0,
+   "max": 259
+  },
+  "generated_tokens": {
+   "n": 10,
+   "mean": 40.4,
+   "p50": 45.5,
+   "p90": 50.4,
+   "p95": 52.2,
+   "p99": 53.64,
+   "max": 54
+  },
+  "model_load_ms": 4445,
+  "shown_from_llama": 9
+ },
+ "sustained": {
+  "measured": false,
+  "note": "NOT MEASURED - re-run with --sustained-seconds 600 (and battery unplugged) on the device."
+ },
+ "memory_after_advisor": {
+  "rss_mb": 1843.1796875,
+  "pss_mb": null,
+  "note": "peak RSS (VmHWM) of the app process incl. detector, Python and Llama"
+ },
+ "cold_start": {
+  "load_ms": {
+   "n": 4,
+   "mean": 400.725,
+   "p50": 380.35,
+   "p90": 446.75,
+   "p95": 459.125,
+   "p99": 469.025,
+   "max": 471.5
+  },
+  "first_verdict_ms": {
+   "n": 4,
+   "mean": 13.265,
+   "p50": 12.655,
+   "p90": 14.492,
+   "p95": 14.876,
+   "p99": 15.1832,
+   "max": 15.26
+  },
+  "python_start_ms": {
+   "n": 4,
+   "mean": 406.4,
+   "p50": 381.55,
+   "p90": 458.9,
+   "p95": 475.1,
+   "p99": 488.06,
+   "max": 491.3
+  },
+  "source": "Kavach Android app after am force-stop (Chaquopy); load_ms = import + Detector(); python_start_ms (Python.start) is extra and reported separately"
+ }
+}

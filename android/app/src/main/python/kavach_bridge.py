@@ -218,6 +218,44 @@ def selftest() -> str:
     })
 
 
+def cold_start(out_path: str, python_start_ms: float) -> str:
+    """First use after a fresh process: import + load the detector + first verdict (same message as
+    bench/run_bench.py's cold_start). Python start time is measured in Kotlin and passed in."""
+    t = time.perf_counter()
+    from kavach.pipeline import Detector
+    d = Detector()                       # same as run_bench (network model included)
+    t1 = time.perf_counter()
+    d.analyze_message("Your SBI account is blocked. Update KYC at http://sbi-kyc.xyz now", None, with_prompt=False)
+    t2 = time.perf_counter()
+    row = {"ts": time.time(), "python_start_ms": round(python_start_ms, 1), "load_ms": round((t1 - t) * 1000, 1),
+           "first_verdict_ms": round((t2 - t1) * 1000, 2)}
+    with open(out_path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(row) + "\n")
+    return _dumps(row)
+
+
+def run_bench(root: str, args_json: str) -> str:
+    """Run kavach-edge/bench/run_bench.py UNCHANGED inside the app process (protocol rule: same code on
+    every device). `root` holds a pushed copy of bench/, data/, models/ and demo/pcaps/; the script
+    writes results/bench/bench_<label>.json there. stdout goes to a log file (logcat hides it here)."""
+    import contextlib
+    import runpy
+    import sys
+    args = json.loads(args_json)
+    os.makedirs(os.path.join(root, "results", "bench"), exist_ok=True)
+    log = os.path.join(root, "results", "bench", "stdout.txt")
+    old_argv = sys.argv
+    sys.argv = [os.path.join(root, "bench", "run_bench.py")] + args
+    try:
+        with open(log, "a", encoding="utf-8") as f, contextlib.redirect_stdout(f):
+            runpy.run_path(sys.argv[0], run_name="__main__")
+    except SystemExit:
+        pass
+    finally:
+        sys.argv = old_argv
+    return _dumps({"done": True, "log": log})
+
+
 def score_file(in_path: str, out_path: str) -> str:
     """Parity check: score every line of a JSONL file ({"text","sender"} or {"url"}) and write
     one result line each. The same function runs on the laptop, so outputs can be diffed."""

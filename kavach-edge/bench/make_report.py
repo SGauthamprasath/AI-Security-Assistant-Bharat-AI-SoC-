@@ -60,6 +60,27 @@ def row(label, runs):
     }
 
 
+def conditions(k, rs):
+    """How and under what conditions an Arm device was measured, so no number is read out of context."""
+    out = [f"**{k}: conditions and method**\n"]
+    for i, r in enumerate(rs, 1):
+        out.append(f"* run {i}: {r.get('device_note') or 'no device note'}")
+    notes = " ".join(r.get("device_note", "") for r in rs)
+    cs = g(rs[0], "cold_start", "source")
+    if cs:
+        ps = g(rs[0], "cold_start", "python_start_ms", "p50")
+        n = g(rs[0], "cold_start", "load_ms", "n")
+        out.append(f"* cold start (n={n}): {cs}" + (f"; Python start p50 {ps:.0f} ms comes on top of the cold start shown above." if ps else "."))
+    if "airplane=0" in notes:
+        out.append("* **Deviation from protocol: airplane mode was OFF** during these runs (the phone was USB-tethering the laptop). "
+                   "The app has no INTERNET permission and the detector has no network code, but radio activity can affect heat and CPU load.")
+    if "Chaquopy" in notes:
+        out.append("* RSS/PSS are for the whole Android app process (Android runtime + embedded Python + detector), not a bare Python "
+                   "process; the 150 MB RSS target was set for the latter. PSS is the memory Android charges the app.")
+    out.append("")
+    return out
+
+
 def main():
     runs = load()
     rows = {k: row(k, v) for k, v in runs.items()}
@@ -85,6 +106,8 @@ def main():
                   ("RSS < 150 MB", r["rss"] is not None and r["rss"] < TARGET["rss_mb"]), ("model files < 10 MB", r["models_mb"] is not None and r["models_mb"] < TARGET["model_mb"])]
             L.append(f"* **{k}** targets: " + "; ".join(f"{n}: {'MET' if v else 'MISSED'}" for n, v in ok))
         L.append("")
+        for k in arm:
+            L += conditions(k, runs[k])
 
     L.append("## 5.2 Development reference (x86 sandbox) - NOT Arm, shown only to localise bottlenecks\n")
     if ref:
@@ -109,10 +132,22 @@ def main():
     L.append("## 5.4 On-device LLM advisor (Llama via ExecuTorch)\n")
     adv = [(k, r["advisor"]) for k, r in rows.items() if r["advisor"] and r["advisor"].get("measured")]
     if adv:
-        L.append("| Device | time-to-first-token p50 | total p50 | tokens/s p50 | RSS after LLM |\n|---|---|---|---|---|")
+        L.append("| Device | runs x samples | time-to-first-token p50 | total p50 | decode tokens/s p50 | prefill tokens/s p50 | output tokens p50 | model load | peak RSS (app) |\n"
+                 "|---|---|---|---|---|---|---|---|---|")
         for k, a in adv:
-            rss = g(runs[k][0], "memory_after_advisor", "rss_mb")
-            L.append(f"| {k} | {f(g(a, 'ttfb_ms', 'p50'), 0, ' ms')} | {f(g(a, 'total_ms', 'p50'), 0, ' ms')} | {f(g(a, 'tokens_per_s', 'p50'), 1)} | {f(rss, 0, ' MB')} |")
+            rs = [r for r in runs[k] if g(r, "advisor", "measured")]
+
+            def m(*p):   # median over runs of each run's value (each run's value is its own p50)
+                return med([g(r, "advisor", *p) for r in rs])
+            rss = med([g(r, "memory_after_advisor", "rss_mb") for r in rs])
+            L.append(f"| {k} | {len(rs)} x {a.get('samples', '?')} | {f(m('ttfb_ms', 'p50'), 0, ' ms')} | {f(m('total_ms', 'p50'), 0, ' ms')} | "
+                     f"{f(m('tokens_per_s', 'p50'), 1)} | {f(m('prefill_tokens_per_s', 'p50'), 0)} | {f(m('generated_tokens', 'p50'), 0)} | "
+                     f"{f(m('model_load_ms'), 0, ' ms')} | {f(rss, 0, ' MB')} |")
+            if a.get("source"):
+                shown = med([g(r, "advisor", "shown_from_llama") for r in rs])
+                L.append(f"\n*{k}: model `{a.get('model')}`. Measured by: {a['source']}. Each cell is the median over runs of that "
+                         f"run's p50. After the output checks, Llama's text was shown for {shown:.0f} of {a.get('samples')} messages per run; "
+                         f"the rest fell back to the playbook template.*")
         L.append("")
     else:
         L.append(f"{PEND} - not measured. Wrap the ExecuTorch runner as described in protocol section 4 and run `bench/run_bench.py ... --advisor-cmd ./run_llama.sh`.\n")

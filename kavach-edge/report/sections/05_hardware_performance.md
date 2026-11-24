@@ -4,11 +4,22 @@
 
 ## 5.1 Measured on Arm hardware
 
-**PENDING** - no Arm run has been recorded yet. Run on the phone / Raspberry Pi:
+| Device | CPU | runs | cold start (load + first verdict) | message p50 / p95 / p99 | URL p50 | throughput | RSS / PSS (detector) | RSS with pcap parser | detector files |
+|---|---|---|---|---|---|---|---|---|---|
+| phone_arm64 | 0xd41 (8 cores) | 3 | 393 ms | 1.54 / 3.59 / 3.93 ms | 1.55 ms | 524 msg/s | 243 / 117 MB | 289 MB | 3.62 MB |
 
-```bash
-python3 bench/run_bench.py --label phone_arm64 --device-note "<model>, Android <ver>, <RAM>, battery <pct>%" --iters 2000
-```
+Targets: p95_ms 50, cold_s 1.0, rss_mb 150, model_mb 10.
+
+* **phone_arm64** targets: p95 < 50 ms: MET; cold start < 1 s: MET; RSS < 150 MB: MISSED; model files < 10 MB: MET
+
+**phone_arm64: conditions and method**
+
+* run 1: Vivo V40e (V2403), MediaTek Dimensity 7300, 8 GB RAM, Android 16 (OriginOS 6); Kavach app, detector via Chaquopy (Python 3.12, NumPy 1.26.2) in the app process; screen on, app in foreground, phone on USB; Extended RAM off (user-confirmed, phone restarted before the run); conditions at run start: airplane=0 swap_mb=8191 battery=43% batt_temp=36.8C usb_power=true ac_power=false brightness_auto=0 uptime_min=21 (run 1 of 3)
+* run 2: Vivo V40e (V2403), MediaTek Dimensity 7300, 8 GB RAM, Android 16 (OriginOS 6); Kavach app, detector via Chaquopy (Python 3.12, NumPy 1.26.2) in the app process; screen on, app in foreground, phone on USB; Extended RAM off (user-confirmed, phone restarted before the run); conditions at run start: airplane=0 swap_mb=8191 battery=43% batt_temp=37.1C usb_power=true ac_power=false brightness_auto=0 uptime_min=25 (run 2 of 3)
+* run 3: Vivo V40e (V2403), MediaTek Dimensity 7300, 8 GB RAM, Android 16 (OriginOS 6); Kavach app, detector via Chaquopy (Python 3.12, NumPy 1.26.2) in the app process; screen on, app in foreground, phone on USB; Extended RAM off (user-confirmed, phone restarted before the run); conditions at run start: airplane=0 swap_mb=8191 battery=43% batt_temp=37.1C usb_power=true ac_power=false brightness_auto=0 uptime_min=29 (run 3 of 3)
+* cold start (n=4): Kavach Android app after am force-stop (Chaquopy); load_ms = import + Detector(); python_start_ms (Python.start) is extra and reported separately; Python start p50 382 ms comes on top of the cold start shown above.
+* **Deviation from protocol: airplane mode was OFF** during these runs (the phone was USB-tethering the laptop). The app has no INTERNET permission and the detector has no network code, but radio activity can affect heat and CPU load.
+* RSS/PSS are for the whole Android app process (Android runtime + embedded Python + detector), not a bare Python process; the 150 MB RSS target was set for the latter. PSS is the memory Android charges the app.
 
 ## 5.2 Development reference (x86 sandbox) - NOT Arm, shown only to localise bottlenecks
 
@@ -18,22 +29,26 @@ python3 bench/run_bench.py --label phone_arm64 --device-note "<model>, Android <
 
 Optimisation done from this profile: the NumPy tree evaluator walked trees one by one (about 8.4 ms per URL); it now walks all trees per level (about 0.5 ms per URL) with bit-level parity (max |diff| 7e-15). Arm cores will be slower than a server core - the Arm table above is the one that counts.
 
-## 5.3 Where the time goes (sandbox_x86, per message)
+## 5.3 Where the time goes (phone_arm64, per message)
 
 | stage | p50 ms | p95 ms | p99 ms |
 |---|---|---|---|
-| preprocess | 0.041 | 0.066 | 0.086 |
-| sms_model | 0.157 | 0.222 | 0.268 |
-| sms_rules | 0.239 | 0.329 | 0.380 |
-| url_analysis | 0.001 | 0.663 | 0.780 |
-| fusion | 0.032 | 0.058 | 0.083 |
-| evidence | 0.087 | 0.302 | 0.349 |
+| preprocess | 0.100 | 0.133 | 0.162 |
+| sms_model | 0.400 | 0.505 | 0.605 |
+| sms_rules | 0.440 | 0.560 | 0.624 |
+| url_analysis | 0.002 | 1.925 | 2.166 |
+| fusion | 0.084 | 0.127 | 0.148 |
+| evidence | 0.207 | 0.690 | 0.761 |
 
-Network monitor (sandbox_x86): normal_browsing: 110 connections in 17.7 ms (6218/s); port_scan: 1024 connections in 380.6 ms (2690/s); syn_flood: 3000 connections in 3425.3 ms (876/s); mixed_home_network: 4135 connections in 3887.5 ms (1064/s).
+Network monitor (phone_arm64): normal_browsing: 110 connections in 51.7 ms (2126/s); port_scan: 1024 connections in 1071.2 ms (956/s); syn_flood: 3000 connections in 10679.4 ms (281/s); mixed_home_network: 4135 connections in 12441.8 ms (332/s).
 
 ## 5.4 On-device LLM advisor (Llama via ExecuTorch)
 
-**PENDING** - not measured. Wrap the ExecuTorch runner as described in protocol section 4 and run `bench/run_bench.py ... --advisor-cmd ./run_llama.sh`.
+| Device | runs x samples | time-to-first-token p50 | total p50 | decode tokens/s p50 | prefill tokens/s p50 | output tokens p50 | model load | peak RSS (app) |
+|---|---|---|---|---|---|---|---|---|
+| phone_arm64 | 3 x 10 | 2614 ms | 5724 ms | 14.5 | 96 | 46 | 3816 ms | 1862 MB |
+
+*phone_arm64: model `Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte`. Measured by: Kavach Android app: ExecuTorch LlmModule in-process (executorch-android 1.1.0, XNNPACK CPU); stats from ExecuTorch's onStats callback; not run_bench --advisor-cmd. Each cell is the median over runs of that run's p50. After the output checks, Llama's text was shown for 9 of 10 messages per run; the rest fell back to the playbook template.*
 
 ## 5.5 Sustained load: battery and temperature
 
@@ -48,14 +63,14 @@ Network monitor (sandbox_x86): normal_browsing: 110 connections in 17.7 ms (6218
 | net_hgb.npz | 295 |
 | net_meta.json | 2 |
 | psl_multi.json | 82 |
-| shared_hosting.txt | 5 |
+| shared_hosting.txt | 6 |
 | sms_lr.bin | 1024 |
 | sms_lr.json | 0 |
 | tld_rate.json | 20 |
-| trusted_domains.txt | 648 |
+| trusted_domains.txt | 697 |
 | url_hgb.json | 1 |
 | url_hgb.npz | 378 |
 | url_ngram.bin | 1024 |
-| **total** | **3482** |
+| **total** | **3531** |
 
 Reproduce: `bash bench/BENCHMARK_PROTOCOL.md` section 3 on the device, then `python3 bench/make_report.py`.

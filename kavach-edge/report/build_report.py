@@ -43,6 +43,40 @@ if os.path.exists(bf):
     vals.update({"model_mb": f"{sum(b['model_files_bytes'].values())/1e6:.1f}", "x86_p50": f"{b['message_latency_ms']['total']['p50']:.2f}", "x86_p95": f"{b['message_latency_ms']['total']['p95']:.2f}",
                  "x86_rss": f"{b['memory_after_message_workload']['rss_mb']:.0f}"})
 
+# Phone (Arm) numbers: median over the bench_phone_arm64_run*.json files. Missing -> PENDING, never a guess.
+import glob as _glob  # noqa: E402
+import statistics as _st  # noqa: E402
+_P = "**PENDING**"
+_runs = [json.load(open(f)) for f in sorted(_glob.glob(os.path.join(ROOT, "results", "bench", "bench_phone_arm64_run*.json")))]
+
+
+def _med(*path, nd=0):
+    v = []
+    for r in _runs:
+        for k in path:
+            r = r.get(k) if isinstance(r, dict) else None
+        if isinstance(r, (int, float)):
+            v.append(r)
+    return f"{_st.median(v):.{nd}f}" if v else _P
+
+
+vals.update({
+    "arm_runs": str(len(_runs)) if _runs else _P,
+    "arm_p50": _med("message_latency_ms", "total", "p50", nd=2), "arm_p95": _med("message_latency_ms", "total", "p95", nd=2),
+    "arm_rss": _med("memory_after_message_workload", "rss_mb"), "arm_pss": _med("memory_after_message_workload", "pss_mb"),
+    "arm_cold": _med("cold_start", "load_ms", "p50"), "arm_pystart": _med("cold_start", "python_start_ms", "p50"),
+    "llm_ttft": _med("advisor", "ttfb_ms", "p50"), "llm_total": _med("advisor", "total_ms", "p50"),
+    "llm_tps": _med("advisor", "tokens_per_s", "p50", nd=1), "llm_rss": _med("memory_after_advisor", "rss_mb"),
+    "llm_shown": _med("advisor", "shown_from_llama"), "llm_samples": _med("advisor", "samples"),
+})
+_inj = os.path.join(ROOT, "results", "injection.json")
+if os.path.exists(_inj):
+    J = json.load(open(_inj, encoding="utf-8"))
+    ph = J.get("phone", {})
+    vals.update({"inj_n": str(J["n"]), "inj_lowered": str(len(J["verdict_lowered"])), "inj_raised": str(len(J["verdict_raised"])),
+                 "inj_leaks": str(len(J["attack_text_in_prompt"])), "inj_phone_equal": str(ph.get("verdict_equal_phone_laptop", _P)),
+                 "inj_llama": str(ph.get("shown_llama", _P)), "inj_template": str(ph.get("shown_template", _P))})
+
 
 def fill(t):
     return re.sub(r"\{\{(\w+)\}\}", lambda m: vals.get(m.group(1), "**MISSING:" + m.group(1) + "**"), t)
