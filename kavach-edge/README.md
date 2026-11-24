@@ -23,7 +23,7 @@ print(d.analyze_pcap('demo/pcaps/port_scan.pcap', with_prompt=False)['alerts'][0
 | Battery / temperature | `bench/BENCHMARK_PROTOCOL.md` section 5 (`bench/adb_collect.sh`) | `results/bench/adb_*/summary.json` |
 | User study | `study/PROTOCOL.md`; open `study/study_app.html`; `python3 study/analyze_study.py --report` | `results/STUDY_RESULTS.md` |
 | Everything in the report | `python3 bench/make_report.py && python3 report/build_report.py` | `report/TECHNICAL_REPORT.md` |
-| Tests (parity, schema, offline, pipeline) | `python3 -m pytest -q tests` | 16 tests |
+| Tests (parity, schema, offline, pipeline, Android bridge, prompt injection) | `python3 -m pytest -q tests` | 136 tests |
 
 ## Layout
 ```
@@ -40,14 +40,20 @@ tools/         optional live-capture tool (needs scapy + root; deliberately outs
 schemas/       kavach.evidence/1.0 JSON schema
 ```
 
-## Advisor integration (Llama + ExecuTorch)
-`ev = detector.analyze_message(text, sender, with_prompt=True)` returns `ev["advisor_prompt"] = {system, user, facts}` built from the evidence only. Run it through the on-device model, then
-`advisor.check_grounding(output, ev)`; show the model text only if `ok` is true, else show `advisor.template_explanation(ev, lang)`. Time it with
-`python3 bench/run_bench.py --advisor-cmd "./run_llama.sh"` (runner reads the prompt JSON on stdin, streams text, final line `{"tokens": N}`).
+## Advisor integration (Llama + ExecuTorch) - built, in `../android/`
+The Android app runs this package unchanged through Chaquopy. `../android/app/src/main/python/kavach_bridge.py` calls
+`Detector.analyze_message`, builds the Llama prompt with `advisor.build_explain_prompt` (detector facts only, never the message
+text; 2-3 sentences; stance follows the verdict) in the Llama 3 chat format, and after generation `finalize()` checks the text
+(`advisor.check_grounding` plus checks for directing the user to a link/number, contradicting the verdict, certainty claims,
+claims of harm already done, and unsupported topics). On any failure it shows `advisor.template_explanation`. Steps always come
+from `advisor.REMEDIATION`. Llama 3.2 1B SpinQuant INT4 runs in the app through ExecuTorch's `LlmModule`; its timings are logged
+by the app and written into the bench files by `bench/llm_from_app.py`. `advisor.build_prompt` (the wider prompt) is kept unchanged.
 
 ## Honest status
-Measured and reproducible here: detection accuracy (public + locked hand-written tests), offline proof, x86 reference timings, tests, study software.
-**Not yet measured (needs the real device / people): Arm latency, memory, battery, temperature; the user study; the phone demo recording; LLM advisor timing.**
-See `REMAINING_TASKS.md`.
+Measured: detection accuracy (public + locked hand-written tests), offline proof (laptop: static/runtime/namespace; phone:
+`offline_proof/phone_app_check.sh`), x86 reference timings, **phone latency/memory/cold start and Llama timing**
+(`results/bench/bench_phone_arm64_run*.json`, taken with airplane mode off - see report section 5), prompt-injection results
+(`results/injection.json`), tests (136 in `tests/`).
+**Not yet measured: phone battery and temperature over 30 minutes; the user study; the demo video recording.**
 
 Datasets: UCI SMS Spam Collection; IMC'25 user-reported smishing (CC BY 4.0, Agarwal et al.); Phishing.Database; Tranco; OpenDNS top domains; NSL-KDD. See `data/fetch_data.py`.

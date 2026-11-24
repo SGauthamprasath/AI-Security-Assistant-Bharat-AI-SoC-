@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="navy">#0F172A</color>
+    <color name="navy_soft">#1E293B</color>
+    <color name="bg">#F1F5F9</color>
+    <color name="card">#FFFFFF</color>
+    <color name="card_stroke">#E2E8F0</color>
+    <color name="input_bg">#F8FAFC</color>
+    <color name="input_stroke">#CBD5E1</color>
+    <color name="text">#0F172A</color>
+    <color name="muted">#64748B</color>
+    <color name="draft">#94A3B8</color>
+    <color name="primary">#2563EB</color>
+    <color name="primary_soft">#DBEAFE</color>
+    <color name="disabled">#94A3B8</color>
+    <color name="danger">#C62828</color>
+    <color name="warning">#E65100</color>
+    <color name="safe">#2E7D32</color>
+    <color name="pending">#64748B</color>
+    <color name="dot_ready">#22C55E</color>
+    <color name="dot_loading">#F59E0B</color>
+    <color name="dot_error">#EF4444</color>
+</resources>

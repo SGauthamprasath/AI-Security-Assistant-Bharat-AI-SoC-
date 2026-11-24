@@ -6,6 +6,8 @@
 
     <application
         android:allowBackup="false"
+        android:icon="@drawable/ic_shield"
+        android:theme="@style/Theme.Kavach"
         android:label="Kavach Edge"
         android:supportsRtl="true">
         <activity
