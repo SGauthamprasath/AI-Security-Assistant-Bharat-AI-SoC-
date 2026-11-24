@@ -1,0 +1,13 @@
+# Model weights and tokenizer: never commit (see README for how to obtain them)
+*.pte
+tokenizer.model
+# Build outputs and local machine files
+build/
+.gradle/
+local.properties
+.idea/
+*.iml
+__pycache__/
+*.pyc
+# personal notes, not part of the project
+android/summa.txt
