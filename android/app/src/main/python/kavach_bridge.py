@@ -25,7 +25,7 @@ _DETECTOR = None
 _REQUIRED = ["fusion.json", "psl_multi.json", "shared_hosting.txt", "sms_lr.bin", "sms_lr.json",
              "tld_rate.json", "trusted_domains.txt", "url_hgb.json", "url_hgb.npz", "url_ngram.bin"]
 
-MAX_NEW_TOKENS = 160          # Kotlin stops generation after this many tokens (about 13 s at ~12 tok/s)
+MAX_NEW_TOKENS = 96           # 2-3 sentences fit in ~60 tokens; this is the hard cap (~10 s at ~9-12 tok/s)
 
 
 # ----------------------------------------------------------------------------------- detector
@@ -57,7 +57,7 @@ def llama3_chat(system: str, user: str) -> str:
 
     Same layout ExecuTorch's LlamaDemo uses for model type LLAMA_3 (header line, then the text,
     then <|eot_id|>), ending with an open assistant header so the model writes the answer.
-    The SMS text itself is never in the prompt: advisor.build_prompt only passes detector facts.
+    The SMS text itself is never in the prompt: advisor.build_explain_prompt only passes detector facts.
     """
     return ("<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\n" + system + "<|eot_id|>"
             "<|start_header_id|>user<|end_header_id|>\n\n" + user + "<|eot_id|>"
@@ -66,7 +66,8 @@ def llama3_chat(system: str, user: str) -> str:
 
 def _package(ev: dict, language: str) -> str:
     """Everything the UI needs before Llama runs."""
-    p = ev.get("advisor_prompt") or advisor.build_prompt(ev, language)
+    # Narrow prompt: Llama only explains the reasons; the steps come from the playbook (see finalize).
+    p = advisor.build_explain_prompt(ev, language)
     v = ev["verdict"]
     return _dumps({
         "verdict": v,                                             # from risk fusion, never from Llama
@@ -92,22 +93,69 @@ _SPECIAL = re.compile(r"<\|[a-z_]+\|>")
 # Phrases that would contradict a dangerous/suspicious verdict. Llama must never overrule fusion.
 _SAYS_SAFE = re.compile(r"\b(?:is|looks|seems|appears)\s+(?:to\s+be\s+)?(?:safe|genuine|legitimate|real|harmless)\b"
                         r"|\bnot\s+(?:a\s+)?(?:scam|fraud)\b|\bnothing\s+to\s+worry\b", re.I)
-_OVERCLAIM = re.compile(r"\b100\s*%|\b(?:always\s+(?:right|correct)|definitely|guaranteed)\b", re.I)
+# Phrases that would contradict a SAFE verdict ("no signs of a scam" is fine, "likely a scam" is not).
+_SAYS_SCAM = re.compile(r"\b(?:is|looks|seems|appears|likely|probably|may\s+be|might\s+be|could\s+be)\s+"
+                        r"(?:to\s+be\s+|like\s+)?(?:a\s+)?(?:scam|fraud|phishing|dangerous|suspicious|fake)\b", re.I)
+# "100%", "definitely", or a flat "this is a scam" (the detector only says "very likely").
+_OVERCLAIM = re.compile(r"\b100\s*%|\b(?:always\s+(?:right|correct)|definitely|certainly|guaranteed)\b"
+                        r"|\b(?:is|are)\s+(?:a\s+)?(?:scam|fraud)\b", re.I)
+# Lead-ins that echo our prompt, e.g. "Here are the FACTS explained in simple English:"
+_PREAMBLE = re.compile(r"^\s*(?:here\s+(?:is|are)\b[^\n]*?:|explanation\s*:|facts\s*:)\s*", re.I)
+
+# Topic check. If Llama talks about one of these topics, the evidence must contain a signal (or
+# entity) about it. Signal ids are the detector's rule ids (kavach/sms_rules.py, urlkit).
+_TOPICS = {
+    "credentials": (re.compile(r"\b(?:otp|pin|cvv|password|passcode|secret code)\b", re.I),
+                    {"S_ASK_CREDENTIALS", "S_UPI_COLLECT", "L_OTP_NOTICE", "L_DELIVERY_OTP"}),
+    "phone_call": (re.compile(r"\bcall(?:s|ed|ing)?\b|\bphone\s+number\b|\bnumber\s+(?:given|in\s+the\s+message)\b", re.I),
+                   {"S_CALL_BACK", "S_AUTHORITY_ARREST"}),
+    "payment": (re.compile(r"\b(?:pay|paid|payment|fee|deposit|charges?|rupees|rs\.?)\b|₹", re.I),
+                {"S_JOB_TASK", "S_DELIVERY_PROBLEM", "S_INVESTMENT", "S_LOAN_OFFER", "S_UPI_COLLECT", "S_HEY_MUM",
+                 "S_REFUND_TAX", "L_TXN_ALERT", "L_ORDER_STATUS"}),
+    "app_install": (re.compile(r"\b(?:install|apk|anydesk|teamviewer|remote\s+(?:access|control))\b", re.I),
+                    {"S_REMOTE_ACCESS"}),
+}
+
+
+def _unsupported_topics(text: str, ev: dict) -> list:
+    ids = {s.get("id") for s in ev.get("signals", [])}
+    has_phone = bool(ev.get("entities", {}).get("has_phone_number"))
+    out = []
+    for name, (pat, support) in _TOPICS.items():
+        if pat.search(text) and not (ids & support) and not (name == "phone_call" and has_phone):
+            out.append(name)
+    return out
+
+
+def _clean(llm_text: str) -> str:
+    """Remove special tokens and prompt echoes, and drop a sentence cut off by the token cap."""
+    text = _SPECIAL.sub("", llm_text or "").strip()
+    text = _PREAMBLE.sub("", text).strip()
+    if text and text[-1] not in ".!?":
+        cut = max(text.rfind(". "), text.rfind("! "), text.rfind("? "))
+        text = text[:cut + 1] if cut > 0 else text
+    return text
 
 
 def check_output(llm_text: str, ev: dict) -> dict:
     """All checks on Llama's text. Any failure -> use the template from the playbook instead."""
-    text = _SPECIAL.sub("", llm_text or "").strip()
+    text = _clean(llm_text)
     reasons = []
     if len(text) < 20:
         reasons.append("empty_or_too_short")
     g = advisor.check_grounding(text, ev)           # invented phone numbers / links
     if not g["ok"]:
         reasons.append("ungrounded")
-    if ev["verdict"]["label"] != "safe" and _SAYS_SAFE.search(text):
+    label = ev["verdict"]["label"]
+    if label != "safe" and _SAYS_SAFE.search(text):
+        reasons.append("contradicts_verdict")
+    if label == "safe" and _SAYS_SCAM.search(text):
         reasons.append("contradicts_verdict")
     if _OVERCLAIM.search(text):
         reasons.append("overclaims_certainty")
+    topics = _unsupported_topics(text, ev)          # claims about OTPs, calls, payments, apps with no evidence
+    if topics:
+        reasons.append("unsupported_topic:" + ",".join(topics))
     return {"ok": not reasons, "reasons": reasons, "grounding": g, "text": text}
 
 

@@ -77,6 +77,74 @@ def test_bad_llama_text_falls_back_to_template(scam, bad, reason):
     assert out["verdict"]["label"] == "dangerous"          # the verdict never changes
 
 
+# Sentences Llama really wrote on the V40e (24 Nov) for the SBI YONO message, with the old wide prompt.
+# None of these topics is in that message's evidence, so each must send the screen to the template.
+REAL_PHONE_OUTPUT = [
+    ("The message asks you to share your account information (like your PIN, CVV, or password) with "
+     "someone who claims to be a bank or company.", "unsupported_topic:credentials"),
+    ("The message also asks you to call the number given in the message, which is not the official number "
+     "of the bank or company.", "unsupported_topic:phone_call"),
+    ("The message you received is a scam. It says you need to take action to protect your account.",
+     "overclaims_certainty"),
+]
+
+
+@pytest.mark.parametrize("bad,reason", REAL_PHONE_OUTPUT)
+def test_real_phone_hallucinations_are_caught(scam, bad, reason):
+    out = _fin(bad, scam)
+    assert out["source"] == "template" and reason in out["check"]["reasons"]
+
+
+def test_safe_verdict_called_scam_is_caught():
+    # Real phone output (24 Nov) for a SAFE personal message, caused by a prompt bug since fixed.
+    prepared = json.loads(kb.prepare_message(SAFE, "+919812345678"))
+    out = _fin("The message is likely a scam because it uses a generic and unoriginal tone, which is often "
+               "used by scammers to trick people into revealing sensitive information.", prepared)
+    assert out["source"] == "template" and "contradicts_verdict" in out["check"]["reasons"]
+    ok = _fin("No warning signs were found. The wording looks like an ordinary personal message, "
+              "not a scam.", prepared)
+    assert ok["source"] == "llama", ok["check"]
+
+
+@pytest.mark.parametrize("label,phrase", [("dangerous", "very likely a scam"), ("suspicious", "may be a scam"),
+                                          ("safe", "Do not call it a scam")])
+def test_explain_prompt_stance_follows_verdict(label, phrase):
+    from kavach import advisor
+    ev = {"verdict": {"label": label, "risk_score": 0.5, "confidence": "medium"}, "signals": [],
+          "entities": {"urls": []}, "category_text": "x"}
+    assert phrase in advisor.build_explain_prompt(ev)["system"]
+
+
+def test_topic_allowed_when_evidence_supports_it():
+    p = json.loads(kb.prepare_message("Your account is on hold. Share the OTP you received to unblock it "
+                                      "immediately or call 9876543210.", "+919812345678"))
+    ids = {s["id"] for s in p["evidence"]["signals"]}
+    assert "S_ASK_CREDENTIALS" in ids
+    out = _fin("This message is likely a scam because it asks for your OTP, which banks never ask for.", p)
+    assert "unsupported_topic:credentials" not in out["check"]["reasons"]
+
+
+def test_preamble_and_cut_sentence_are_cleaned(scam):
+    out = _fin("Here are the FACTS explained in simple English:\n" + GOOD_LLAMA.split("\n")[0] +
+               " The sender also", scam)
+    assert out["source"] == "llama"
+    assert out["explanation"].startswith("This message looks like") and out["explanation"].endswith(".")
+
+
+def test_explain_prompt_has_no_actions(scam):
+    p = scam["prompt"]
+    assert "allowed_actions" not in p and "Do not tap the link" not in p
+    assert "2 or 3 short sentences" in p
+    assert scam["max_new_tokens"] <= 100
+
+
+def test_actions_always_from_playbook(scam):
+    from kavach import advisor
+    out = _fin(GOOD_LLAMA, scam)
+    playbook = {advisor.REMEDIATION[a]["en"] for a in scam["evidence"]["remediation"]}
+    assert out["actions"] and all(a in playbook for a in out["actions"])
+
+
 def test_llama_can_never_change_verdict(scam):
     for text in [GOOD_LLAMA, "The message is safe.", "SAFE SAFE SAFE verdict: safe"]:
         assert _fin(text, scam)["verdict"] == scam["verdict"]

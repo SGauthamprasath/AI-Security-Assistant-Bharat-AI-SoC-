@@ -26,6 +26,12 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 
+dependencies {
+    // ExecuTorch runtime with the LLM runner (XNNPACK CPU backend). 1.1.0 is the version
+    // LlamaDemo pins, confirmed on the V40e with our SpinQuant INT4 .pte (24 Nov).
+    implementation("org.pytorch:executorch-android:1.1.0")
+}
+
 // ---------------------------------------------------------------------------------------------
 // Stage the ONE copy of the detector into the build folder.
 // kavach-edge/kavach is copied (never edited) to build/kavach-staging/kavach, and its model

@@ -81,6 +81,39 @@ def build_prompt(evidence: Dict, language: str = "en") -> Dict[str, str]:
     return {"system": system, "user": user, "facts": facts}
 
 
+def build_explain_prompt(evidence: Dict, language: str = "en") -> Dict[str, object]:
+    """Narrower prompt used by the Android app (added 24 Nov; build_prompt above is unchanged).
+
+    Llama writes ONLY a 2-3 sentence explanation of the detector's reasons. The action steps are not
+    in the prompt at all: the app shows them word for word from REMEDIATION. On the phone, the wider
+    build_prompt made Llama turn playbook actions ("Do not call back the number...") into claims about
+    the message ("it asks you to call a number") that the evidence did not support.
+    """
+    v = evidence["verdict"]
+    facts = {
+        "verdict": v["label"], "risk_percent": round(100 * v["risk_score"]), "confidence": v["confidence"],
+        "scam_type": evidence.get("category_text") if v["label"] != "safe" else None,
+        "reasons": top_reasons(evidence),
+        "suspicious_domains": [u["registered_domain"] for u in evidence["entities"].get("urls", []) if u.get("flags")][:3],
+    }
+    lang = {"en": "simple English", "hi": "simple Hindi (Devanagari)", "ta": "simple Tamil"}.get(language, "simple English")
+    # The stance must follow the verdict. A single "say it is likely a scam" line made Llama call a
+    # SAFE message a scam on the phone (24 Nov).
+    stance = {
+        "dangerous": "The message is very likely a scam. Say 'likely', never that it is certain.",
+        "suspicious": "The message may be a scam. Say 'may be' and that the person should be careful.",
+        "safe": "The message looks safe. Say that no warning signs were found. Do not call it a scam.",
+    }[v["label"]]
+    system = ("You are Kavach, a calm phone safety assistant for non-technical people in India. "
+              "In " + lang + ", write 2 or 3 short sentences that explain the verdict using ONLY the listed reasons. "
+              + stance + " "
+              "Do not give advice or steps: the app shows them separately. Do not add a heading or a list. "
+              "Do not mention OTPs, PINs, passwords, phone calls, payments or apps unless a reason mentions them. "
+              "Never invent phone numbers, links, names or amounts.")
+    user = "FACTS:\n" + json.dumps(facts, ensure_ascii=False)
+    return {"system": system, "user": user, "facts": facts}
+
+
 def template_explanation(evidence: Dict, language: str = "en") -> Dict[str, object]:
     """Deterministic explanation with the same shape the LLM must produce."""
     v = evidence["verdict"]
