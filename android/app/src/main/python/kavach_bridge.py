@@ -91,11 +91,24 @@ def prepare_url(url: str, language: str = "en") -> str:
 # ----------------------------------------------------------------------------------- output checks
 _SPECIAL = re.compile(r"<\|[a-z_]+\|>")
 # Phrases that would contradict a dangerous/suspicious verdict. Llama must never overrule fusion.
-_SAYS_SAFE = re.compile(r"\b(?:is|looks|seems|appears)\s+(?:to\s+be\s+)?(?:safe|genuine|legitimate|real|harmless)\b"
-                        r"|\bnot\s+(?:a\s+)?(?:scam|fraud)\b|\bnothing\s+to\s+worry\b", re.I)
+_SAYS_SAFE = re.compile(r"\b(?:is|looks|seems|appears)\s+(?:to\s+be\s+)?(?:like\s+)?(?:an?\s+)?(?:safe|genuine|legitimate|"
+                        r"real|harmless|official|verified|trusted)\b"
+                        r"|\bnot\s+(?:a\s+)?(?:scam|fraud)\b|\bnothing\s+to\s+worry\b|\bverified\s+by\b", re.I)
 # Phrases that would contradict a SAFE verdict ("no signs of a scam" is fine, "likely a scam" is not).
 _SAYS_SCAM = re.compile(r"\b(?:is|looks|seems|appears|likely|probably|may\s+be|might\s+be|could\s+be)\s+"
                         r"(?:to\s+be\s+|like\s+)?(?:a\s+)?(?:scam|fraud|phishing|dangerous|suspicious|fake)\b", re.I)
+# Llama must never SEND the user to a link or number ("visit sbi-help-desk.com", "call 1800..."), even one
+# that is in the evidence: a domain planted in the SMS is in the evidence as a *suspicious* domain.
+# Negated forms ("do not call", "don't visit", "never open") are allowed.
+_DIRECTS = re.compile(
+    r"(?<!not )(?<!n't )(?<!never )\b(?:visit|go\s+to|open|click|tap|log\s*in|sign\s*in|contact|call|dial|ring|"
+    r"whatsapp|message|text|reach)\b[^.\n]{0,40}?(?:" + advisor._URL.pattern + "|" + advisor._PHONE.pattern + ")",
+    re.I)
+# "You have been scammed / hacked / lost money": a claim about the user, not about the message.
+_HARM_DONE = re.compile(r"\byou\s+(?:have\s+been|have|were|got|'ve\s+been)\s+(?:already\s+)?"
+                        r"(?:scammed|hacked|cheated|defrauded|robbed|lost)\b", re.I)
+# For a SUSPICIOUS verdict: "likely / very likely / most likely / probably a scam" says more than fusion did.
+_LIKELY_SCAM = re.compile(r"\b(?:likely|probably)\s+(?:to\s+be\s+)?(?:a\s+)?(?:scam|fraud|phishing)\b", re.I)
 # "100%", "definitely", or a flat "this is a scam" (the detector only says "very likely").
 _OVERCLAIM = re.compile(r"\b100\s*%|\b(?:always\s+(?:right|correct)|definitely|certainly|guaranteed)\b"
                         r"|\b(?:is|are)\s+(?:a\s+)?(?:scam|fraud)\b", re.I)
@@ -134,7 +147,15 @@ def _clean(llm_text: str) -> str:
     if text and text[-1] not in ".!?":
         cut = max(text.rfind(". "), text.rfind("! "), text.rfind("? "))
         text = text[:cut + 1] if cut > 0 else text
-    return text
+    # A 1B model at temperature 0 can loop ("You should not ... . You should not ... ."). Keep each
+    # sentence once, in order.
+    seen, kept = set(), []
+    for s in re.split(r"(?<=[.!?])\s+", text):
+        key = re.sub(r"\W+", " ", s).strip().lower()
+        if key and key not in seen:
+            seen.add(key)
+            kept.append(s.strip())
+    return " ".join(kept)
 
 
 def check_output(llm_text: str, ev: dict) -> dict:
@@ -151,6 +172,12 @@ def check_output(llm_text: str, ev: dict) -> dict:
         reasons.append("contradicts_verdict")
     if label == "safe" and _SAYS_SCAM.search(text):
         reasons.append("contradicts_verdict")
+    if label == "suspicious" and _LIKELY_SCAM.search(text):   # detector is unsure; "likely" overstates it
+        reasons.append("overstates_suspicious")
+    if _DIRECTS.search(text):
+        reasons.append("directs_to_link_or_number")
+    if _HARM_DONE.search(text):     # the detector only knows a message arrived, not that anyone lost anything
+        reasons.append("claims_harm_happened")
     if _OVERCLAIM.search(text):
         reasons.append("overclaims_certainty")
     topics = _unsupported_topics(text, ev)          # claims about OTPs, calls, payments, apps with no evidence

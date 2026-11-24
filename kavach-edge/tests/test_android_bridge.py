@@ -106,7 +106,7 @@ def test_safe_verdict_called_scam_is_caught():
     assert ok["source"] == "llama", ok["check"]
 
 
-@pytest.mark.parametrize("label,phrase", [("dangerous", "very likely a scam"), ("suspicious", "may be a scam"),
+@pytest.mark.parametrize("label,phrase", [("dangerous", "very likely a scam"), ("suspicious", "never 'likely'"),
                                           ("safe", "Do not call it a scam")])
 def test_explain_prompt_stance_follows_verdict(label, phrase):
     from kavach import advisor

@@ -101,13 +101,14 @@ def build_explain_prompt(evidence: Dict, language: str = "en") -> Dict[str, obje
     # SAFE message a scam on the phone (24 Nov).
     stance = {
         "dangerous": "The message is very likely a scam. Say 'likely', never that it is certain.",
-        "suspicious": "The message may be a scam. Say 'may be' and that the person should be careful.",
+        "suspicious": "The message MAY be a scam; the detector is not sure. Say 'may be', never 'likely'.",
         "safe": "The message looks safe. Say that no warning signs were found. Do not call it a scam.",
     }[v["label"]]
     system = ("You are Kavach, a calm phone safety assistant for non-technical people in India. "
               "In " + lang + ", write 2 or 3 short sentences that explain the verdict using ONLY the listed reasons. "
               + stance + " "
               "Do not give advice or steps: the app shows them separately. Do not add a heading or a list. "
+              "Do not introduce yourself. "
               "Do not mention OTPs, PINs, passwords, phone calls, payments or apps unless a reason mentions them. "
               "Never invent phone numbers, links, names or amounts.")
     user = "FACTS:\n" + json.dumps(facts, ensure_ascii=False)

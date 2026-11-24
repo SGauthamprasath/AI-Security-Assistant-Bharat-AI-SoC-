@@ -82,6 +82,24 @@ class MainActivity : Activity() {
             sender.setText(intent.getStringExtra("sender") ?: "")
             analyze(intent.getBooleanExtra("url", false))
         }
+
+        // Dev hook for test sets and benchmarks: load Llama once, then run every line of a JSONL file
+        // ({"id","text","sender"}) through the full pipeline. Results go to llm_runs.jsonl with the id.
+        //   adb shell am start -n com.kavach.edge/.MainActivity --es batch /data/local/tmp/kavach/injection_set.jsonl
+        intent.getStringExtra("batch")?.let { path -> runBatch(path) }
+    }
+
+    private fun runBatch(path: String) = llmExec.execute {   // queued after the model load
+        val lines = File(path).readLines().filter { it.isNotBlank() }
+        lines.forEachIndexed { i, line ->
+            val j = JSONObject(line)
+            val pkg = JSONObject(bridge.callAttr("prepare_message", j.getString("text"),
+                j.optString("sender").ifEmpty { null }).toString())
+            runOnUiThread { showVerdict(pkg, 0.0) }
+            explain(pkg, j.optString("id"))
+            status("Batch ${i + 1}/${lines.size}")
+        }
+        status("Batch done: ${lines.size} items")
     }
 
     // ------------------------------------------------------------------------------- analysis
@@ -110,7 +128,7 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun explain(pkg: JSONObject) {
+    private fun explain(pkg: JSONObject, runId: String = "") {
         val evidence = pkg.getJSONObject("evidence").toString()
         if (!llama.isLoaded) {   // no model: show the template, and say so
             runOnUiThread {
@@ -127,7 +145,7 @@ class MainActivity : Activity() {
         val check = fin.getJSONObject("check")
         val label = if (fin.getString("source") == "llama") "Explained by Llama 3.2 1B on this phone (checked against the evidence)"
                     else "Template explanation (Llama's text failed a check: ${check.getJSONArray("reasons").join(", ")})"
-        m?.let { logMetrics(it, pkg, fin, raw) }
+        m?.let { logMetrics(it, pkg, fin, raw, runId) }
         runOnUiThread {
             showFinal(fin, label)
             m?.let { statusView.text = "TTFT ${it.ttftMs} ms | decode %.1f tok/s | %d tokens | peak RSS %.0f MB"
@@ -158,9 +176,9 @@ class MainActivity : Activity() {
             "\n\n- $sourceLabel\n- Automatic check: it can be wrong. Never tap links in suspicious messages."
     }
 
-    private fun logMetrics(m: LlamaAdvisor.Metrics, pkg: JSONObject, fin: JSONObject, raw: String) {
+    private fun logMetrics(m: LlamaAdvisor.Metrics, pkg: JSONObject, fin: JSONObject, raw: String, runId: String) {
         val row = JSONObject().apply {
-            put("ts", System.currentTimeMillis()); put("model", llama.modelFile); put("load_ms", llama.loadMs)
+            put("ts", System.currentTimeMillis()); put("id", runId); put("model", llama.modelFile); put("load_ms", llama.loadMs)
             put("verdict", pkg.getJSONObject("verdict").getString("label")); put("source", fin.getString("source"))
             put("prompt_tokens", m.promptTokens); put("generated_tokens", m.generatedTokens)
             put("ttft_ms", m.ttftMs); put("prefill_tok_s", m.prefillTokPerS); put("decode_tok_s", m.decodeTokPerS)
