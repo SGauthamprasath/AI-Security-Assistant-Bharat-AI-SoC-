@@ -24,6 +24,16 @@ class MainActivity : Activity() {
                 if (!Python.isStarted()) Python.start(AndroidPlatform(this))
                 val startMs = (System.nanoTime() - t0) / 1e6
                 val bridge = Python.getInstance().getModule("kavach_bridge")
+                // Dev hook for the phone-vs-laptop parity check:
+                //   adb shell am start -n com.kavach.edge/.MainActivity --es score_in /data/local/tmp/kavach/parity_in.jsonl
+                // Results go to the app's external files dir, which adb can pull.
+                intent.getStringExtra("score_in")?.let { inPath ->
+                    val outPath = java.io.File(getExternalFilesDir(null), "parity_out.jsonl").path
+                    val r = bridge.callAttr("score_file", inPath, outPath).toString()
+                    android.util.Log.i("Kavach", "score_file: $r")
+                    runOnUiThread { out.text = "Scored:\n$r" }
+                    return@thread
+                }
                 val report = JSONObject(bridge.callAttr("selftest").toString())
                 report.put("python_start_ms", startMs)
                 android.util.Log.i("Kavach", "selftest: $report")
